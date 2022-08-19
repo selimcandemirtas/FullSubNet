@@ -26,7 +26,7 @@ def main():
         dataset_dir = Path(dataset_dir).expanduser().absolute()
         file_path_list += librosa.util.find_files(dataset_dir.as_posix())  # Sorted
 
-    print(f"Length: {len(file_path_list)}")
+    #print(f"Length: {len(file_path_list)}")
 
     # filter
     tmp = []

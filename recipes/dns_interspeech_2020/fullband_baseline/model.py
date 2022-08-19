@@ -7,16 +7,17 @@ from audio_zen.model.module.sequence_model import SequenceModel
 
 class Model(BaseModel):
     def __init__(
-        self,
-        num_freqs,
-        hidden_size,
-        sequence_model,
-        output_activate_function,
-        look_ahead,
-        norm_type="offline_laplace_norm",
-        weight_init=True,
+            self,
+            num_freqs,
+            hidden_size,
+            sequence_model,
+            output_activate_function,
+            look_ahead,
+            norm_type="offline_laplace_norm",
+            weight_init=True,
     ):
-        """Fullband Model (cIRM mask)
+        """
+        Fullband Model (cIRM mask)
 
         Args:
             num_freqs:
@@ -33,13 +34,13 @@ class Model(BaseModel):
             num_layers=3,
             bidirectional=False,
             sequence_model=sequence_model,
-            output_activate_function=output_activate_function,
+            output_activate_function=output_activate_function
         )
 
         self.look_ahead = look_ahead
         self.norm = self.norm_wrapper(norm_type)
         if weight_init:
-            print("Initializing model...")
+            #print("Initializing model...")
             self.apply(self.weight_init)
 
     def forward(self, noisy_mag):
@@ -54,18 +55,12 @@ class Model(BaseModel):
 
         noisy_mag = functional.pad(noisy_mag, [0, self.look_ahead])  # Pad look ahead
         batch_size, num_channels, num_freqs, num_frames = noisy_mag.size()
-        assert (
-            num_channels == 1
-        ), f"{self.__class__.__name__} takes the mag feature as inputs."
+        assert num_channels == 1, f"{self.__class__.__name__} takes the mag feature as inputs."
 
-        noisy_mag = self.norm(noisy_mag).reshape(
-            batch_size, num_channels * num_freqs, num_frames
-        )
-        output = self.fullband_model(noisy_mag).reshape(
-            batch_size, 2, num_freqs, num_frames
-        )
+        noisy_mag = self.norm(noisy_mag).reshape(batch_size, num_channels * num_freqs, num_frames)
+        output = self.fullband_model(noisy_mag).reshape(batch_size, 2, num_freqs, num_frames)
 
-        return output[:, :, :, self.look_ahead :]
+        return output[:, :, :, self.look_ahead:]
 
 
 if __name__ == "__main__":
@@ -82,7 +77,7 @@ if __name__ == "__main__":
         )
 
         a = datetime.datetime.now()
-        print(model(ipt).min())
-        print(model(ipt).shape)
+        #print(model(ipt).min())
+        #print(model(ipt).shape)
         b = datetime.datetime.now()
-        print(f"{b - a}")
+        #print(f"{b - a}")

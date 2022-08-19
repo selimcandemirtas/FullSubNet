@@ -1,32 +1,23 @@
 import importlib
+import sys
 import os
 import time
-from typing import Optional
+from copy import deepcopy
+from functools import reduce
 
 import torch
 
 
 def load_checkpoint(checkpoint_path, device):
-    """Load PyTorch model checkpoint from a given path.
-
-    Args:
-        checkpoint_path: path to the checkpoint file. It can be *.pth or *.tar
-        device: device to load the checkpoint.
-
-    Returns:
-        Model checkpoint.
-    """
     _, ext = os.path.splitext(os.path.basename(checkpoint_path))
     assert ext in (".pth", ".tar"), "Only support ext and tar extensions of l1 checkpoint."
-    model_checkpoint = torch.load(
-        os.path.abspath(os.path.expanduser(checkpoint_path)), map_location=device
-    )
+    model_checkpoint = torch.load(os.path.abspath(os.path.expanduser(checkpoint_path)), map_location=device)
 
     if ext == ".pth":
-        print(f"Loading {checkpoint_path}.")
+        #print(f"Loading {checkpoint_path}.")
         return model_checkpoint
     else:  # load tar
-        print(f"Loading {checkpoint_path}, epoch = {model_checkpoint['epoch']}.")
+        #print(f"Loading {checkpoint_path}, epoch = {model_checkpoint['epoch']}.")
         return model_checkpoint["l1"]
 
 
@@ -40,16 +31,15 @@ def prepare_empty_dir(dirs, resume=False):
     """
     for dir_path in dirs:
         if resume:
-            assert (
-                dir_path.exists()
-            ), "In resume mode, you must be have an old experiment dir."
+            assert dir_path.exists(), "In resume mode, you must be have an old experiment dir."
         else:
             dir_path.mkdir(parents=True, exist_ok=True)
 
 
 def check_nan(tensor, key=""):
     if torch.sum(torch.isnan(tensor)) > 0:
-        print(f"Found NaN in {key}")
+        #print(f"Found NaN in {key}")
+        pass
 
 
 class ExecutionTime:
@@ -59,7 +49,7 @@ class ExecutionTime:
     Examples:
         timer = ExecutionTime()
         ...
-        print(f"Finished in {timer.duration()} seconds.")
+        #print(f"Finished in {timer.duration()} seconds.")
     """
 
     def __init__(self):
@@ -69,8 +59,9 @@ class ExecutionTime:
         return int(time.time() - self.start_time)
 
 
-def initialize_module(path: str, args: Optional[dict] = None, initialize: bool = True):
-    """Load module or function dynamically with "args".
+def initialize_module(path: str, args: dict = None, initialize: bool = True):
+    """
+    Load module or function dynamically with "args".
 
     Args:
         path: module path in this project.
@@ -78,7 +69,7 @@ def initialize_module(path: str, args: Optional[dict] = None, initialize: bool =
         initialize: whether to initialize the Class or the Function with args.
 
     Examples:
-        Config items are as follows:
+        Config items are as follows：
 
             [model]
             path = "model.FullSubNetModel"
@@ -92,7 +83,9 @@ def initialize_module(path: str, args: Optional[dict] = None, initialize: bool =
             3. If initialize is True:
                 instantiate (or call) the Class (or the Function) and pass the parameters (in "[model.args]") to it.
     """
+
     module_path = ".".join(path.split(".")[:-1])
+    #module_path = "modules/FullSubNet".join(path.split(".")[:-1])
     class_or_function_name = path.split(".")[-1]
 
     module = importlib.import_module(module_path)
@@ -111,12 +104,11 @@ def print_tensor_info(tensor, flag="Tensor"):
     def floor_tensor(float_tensor):
         return int(float(float_tensor) * 1000) / 1000
 
-    print(
-        f"{flag}\n"
-        f"\t"
-        f"max: {floor_tensor(torch.max(tensor))}, min: {float(torch.min(tensor))}, "
-        f"mean: {floor_tensor(torch.mean(tensor))}, std: {floor_tensor(torch.std(tensor))}"
-    )
+    #print(
+    #    f"{flag}\n"
+    #    f"\t"
+    #    f"max: {floor_tensor(torch.max(tensor))}, min: {float(torch.min(tensor))}, "
+    #    f"mean: {floor_tensor(torch.mean(tensor))}, std: {floor_tensor(torch.std(tensor))}")
 
 
 def set_requires_grad(nets, requires_grad=False):
@@ -133,6 +125,62 @@ def set_requires_grad(nets, requires_grad=False):
                 param.requires_grad = requires_grad
 
 
+def merge_config(*config_dicts):
+    """
+    Deep merge configuration dicts.
+
+    Args:
+        *config_dicts: any number of configuration dicts.
+
+    Notes:
+        1. The values of item in the later configuration dict(s) will update the ones in the former dict(s).
+        2. The key in the later dict must be exist in the former dict. It means that the first dict must consists of all keys.
+
+    Examples:
+        a = [
+            "a": 1,
+            "b": 2,
+            "c": {
+                "d": 1
+            }
+        ]
+        b = [
+            "a": 2,
+            "b": 2,
+            "c": {
+                "e": 1
+            }
+        ]
+        c = merge_config(a, b)
+        c = [
+            "a": 2,
+            "b": 2,
+            "c": {
+                "d": 1,
+                "e": 1
+            }
+        ]
+
+    Returns:
+        New deep-copied configuration dict.
+    """
+
+    def merge(older_dict, newer_dict):
+        for new_key in newer_dict:
+            if new_key not in older_dict:
+                # Checks items in custom config must be within common config
+                raise KeyError(f"Key {new_key} is not exist in the common config.")
+
+            if isinstance(older_dict[new_key], dict):
+                older_dict[new_key] = merge(older_dict[new_key], newer_dict[new_key])
+            else:
+                older_dict[new_key] = deepcopy(newer_dict[new_key])
+
+        return older_dict
+
+    return reduce(merge, config_dicts[1:], deepcopy(config_dicts[0]))
+
+
 def prepare_device(n_gpu: int, keep_reproducibility=False):
     """
     Choose to use CPU or GPU depend on the value of "n_gpu".
@@ -145,16 +193,14 @@ def prepare_device(n_gpu: int, keep_reproducibility=False):
         Reproducibility: https://pytorch.org/docs/stable/notes/randomness.html
     """
     if n_gpu == 0:
-        print("Using CPU in the experiment.")
+        #print("Using CPU in the experiment.")
         device = torch.device("cpu")
     else:
         # possibly at the cost of reduced performance
         if keep_reproducibility:
-            print("Using CuDNN deterministic mode in the experiment.")
-            # ensures that CUDA selects the same convolution algorithm each time
-            torch.backends.cudnn.benchmark = False
-            # configures PyTorch only to use deterministic implementation
-            torch.set_deterministic(True)
+            #print("Using CuDNN deterministic mode in the experiment.")
+            torch.backends.cudnn.benchmark = False  # ensures that CUDA selects the same convolution algorithm each time
+            torch.set_deterministic(True)  # configures PyTorch only to use deterministic implementation
         else:
             # causes cuDNN to benchmark multiple convolution algorithms and select the fastest
             torch.backends.cudnn.benchmark = True

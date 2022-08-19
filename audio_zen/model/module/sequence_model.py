@@ -127,17 +127,17 @@ class SequenceModel(nn.Module):
 
 
 def _print_networks(nets: list):
-    print(f"This project contains {len(nets)} networks, the number of the parameters: ")
+    #print(f"This project contains {len(nets)} networks, the number of the parameters: ")
     params_of_all_networks = 0
     for i, net in enumerate(nets, start=1):
         params_of_network = 0
         for param in net.parameters():
             params_of_network += param.numel()
 
-        print(f"\tNetwork {i}: {params_of_network / 1e6} million.")
+        #print(f"\tNetwork {i}: {params_of_network / 1e6} million.")
         params_of_all_networks += params_of_network
 
-    print(f"The amount of parameters in the project is {params_of_all_networks / 1e6} million.")
+    #print(f"The amount of parameters in the project is {params_of_all_networks / 1e6} million.")
 
 
 if __name__ == '__main__':
@@ -157,5 +157,5 @@ if __name__ == '__main__':
         start = datetime.datetime.now()
         opt = model(ipt)
         end = datetime.datetime.now()
-        print(f"{end - start}")
+        #print(f"{end - start}")
         _print_networks([model, ])

@@ -137,4 +137,4 @@ if __name__ == "__main__":
             num_groups_in_drop_band=2,
             weight_init=False,
         )
-        print(model(noisy_mag).shape)
+        #print(model(noisy_mag).shape)

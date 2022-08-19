@@ -5,7 +5,8 @@ from audio_zen.constant import EPSILON
 
 
 def build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_imag) -> torch.Tensor:
-    """Build the complex ratio mask.
+    """
+    Build a complex ratio mask
 
     Args:
         noisy: [B, F, T], noisy complex-valued stft coefficients
@@ -28,7 +29,8 @@ def build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_ima
 
 
 def compress_cIRM(mask, K=10, C=0.1):
-    """Compress the value of cIRM from (-inf, +inf) to [-K ~ K].
+    """
+    Compress the value of cIRM from (-inf, +inf) to [-K ~ K]
 
     References:
         https://ieeexplore.ieee.org/document/7364200
@@ -43,7 +45,8 @@ def compress_cIRM(mask, K=10, C=0.1):
 
 
 def decompress_cIRM(mask, K=10, limit=9.9):
-    """Uncompress cIRM from [-K ~ K] to [-inf, +inf]
+    """
+    Uncompress cIRM from [-K ~ K] to [-inf, +inf]
 
     Args:
         mask: cIRM mask

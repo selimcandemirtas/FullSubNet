@@ -21,7 +21,7 @@ for noisy_file_path in tqdm(noisy_file_paths):
     basename = os.path.basename(noisy_file_path)
     mark = os.path.splitext(os.path.basename(noisy_file_path))[0].split("_")[0:2]
     mark = "_".join(mark)  # single_AF0976
-    print(mark)
+    #print(mark)
     if mark[:6] != "single":
         continue
 

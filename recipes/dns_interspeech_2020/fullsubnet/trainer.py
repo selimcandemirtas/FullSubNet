@@ -4,44 +4,34 @@ from torch.cuda.amp import autocast
 from tqdm import tqdm
 
 from audio_zen.acoustics.feature import drop_band
-from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from audio_zen.trainer.base_trainer import BaseTrainer
+from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 
-plt.switch_backend("agg")
+plt.switch_backend('agg')
 
 
 class Trainer(BaseTrainer):
-    def __init__(
-        self,
-        dist,
-        rank,
-        config,
-        resume,
-        only_validation,
-        model,
-        loss_function,
-        optimizer,
-        train_dataloader,
-        validation_dataloader,
-    ):
-        super().__init__(dist, rank, config, resume, only_validation, model, loss_function, optimizer)
+    def __init__(self, config, resume, only_validation, model, loss_function, optimizer, train_dataloader, validation_dataloader):
+        super().__init__(config, resume, only_validation, model, loss_function, optimizer)
         self.train_dataloader = train_dataloader
         self.valid_dataloader = validation_dataloader
 
     def _train_epoch(self, epoch):
         loss_total = 0.0
 
-        for noisy, clean in tqdm(self.train_dataloader, desc="Training") if self.rank == 0 else self.train_dataloader:
+        #for noisy, clean in tqdm(self.train_dataloader, desc="Training") if self.rank == 0 else self.train_dataloader:
+        for noisy, clean in tqdm(self.train_dataloader, desc="Training"):
             self.optimizer.zero_grad()
 
-            noisy = noisy.to(self.rank)
-            clean = clean.to(self.rank)
+            #noisy = noisy.to(self.rank)
+            #clean = clean.to(self.rank)
 
             noisy_mag, noisy_phase, noisy_real, noisy_imag = self.torch_stft(noisy)
             _, _, clean_real, clean_imag = self.torch_stft(clean)
             cIRM = build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_imag)  # [B, F, T, 2]
             cIRM = drop_band(
-                cIRM.permute(0, 3, 1, 2), self.model.module.num_groups_in_drop_band  # [B, 2, F ,T]
+                cIRM.permute(0, 3, 1, 2),  # [B, 2, F ,T]
+                self.model.module.num_groups_in_drop_band
             ).permute(0, 2, 3, 1)
 
             with autocast(enabled=self.use_amp):
@@ -59,8 +49,8 @@ class Trainer(BaseTrainer):
 
             loss_total += loss.item()
 
-        if self.rank == 0:
-            self.writer.add_scalar(f"Loss/Train", loss_total / len(self.train_dataloader), epoch)
+        #if self.rank == 0:
+        self.writer.add_scalar(f"Loss/Train", loss_total / len(self.train_dataloader), epoch)
 
     @torch.no_grad()
     def _validation_epoch(self, epoch):
@@ -69,26 +59,11 @@ class Trainer(BaseTrainer):
         visualization_metrics = self.visualization_config["metrics"]
 
         loss_total = 0.0
-        loss_list = {
-            "With_reverb": 0.0,
-            "No_reverb": 0.0,
-        }
-        item_idx_list = {
-            "With_reverb": 0,
-            "No_reverb": 0,
-        }
-        noisy_y_list = {
-            "With_reverb": [],
-            "No_reverb": [],
-        }
-        clean_y_list = {
-            "With_reverb": [],
-            "No_reverb": [],
-        }
-        enhanced_y_list = {
-            "With_reverb": [],
-            "No_reverb": [],
-        }
+        loss_list = {"With_reverb": 0.0, "No_reverb": 0.0, }
+        item_idx_list = {"With_reverb": 0, "No_reverb": 0, }
+        noisy_y_list = {"With_reverb": [], "No_reverb": [], }
+        clean_y_list = {"With_reverb": [], "No_reverb": [], }
+        enhanced_y_list = {"With_reverb": [], "No_reverb": [], }
         validation_score_list = {"With_reverb": 0.0, "No_reverb": 0.0}
 
         # speech_type in ("with_reverb", "no_reverb")
@@ -97,8 +72,8 @@ class Trainer(BaseTrainer):
             name = name[0]
             speech_type = speech_type[0]
 
-            noisy = noisy.to(self.rank)
-            clean = clean.to(self.rank)
+            #noisy = noisy.to(self.rank)
+            #clean = clean.to(self.rank)
 
             noisy_mag, noisy_phase, noisy_real, noisy_imag = self.torch_stft(noisy)
             _, _, clean_real, clean_imag = self.torch_stft(clean)
@@ -140,13 +115,8 @@ class Trainer(BaseTrainer):
             self.writer.add_scalar(f"Loss/{speech_type}", loss_list[speech_type] / len(self.valid_dataloader), epoch)
 
             validation_score_list[speech_type] = self.metrics_visualization(
-                noisy_y_list[speech_type],
-                clean_y_list[speech_type],
-                enhanced_y_list[speech_type],
-                visualization_metrics,
-                epoch,
-                visualization_num_workers,
-                mark=speech_type,
+                noisy_y_list[speech_type], clean_y_list[speech_type], enhanced_y_list[speech_type],
+                visualization_metrics, epoch, visualization_num_workers, mark=speech_type
             )
 
         return validation_score_list["No_reverb"]

@@ -1,4 +1,5 @@
 import os
+from functools import partial
 
 import librosa
 import numpy as np
@@ -7,11 +8,12 @@ import torch.nn as nn
 
 
 def stft(y, n_fft, hop_length, win_length):
-    """Wrapper of the official torch.stft for single-channel and multi-channel.
+    """
+    Wrapper of the official torch.stft for single-channel and multi-channel
 
     Args:
         y: single- or multi-channel speech with shape of [B, C, T] or [B, T]
-        n_fft: number of FFT
+        n_fft: num of FFT
         hop_length: hop length
         win_length: hanning window size
 
@@ -28,30 +30,23 @@ def stft(y, n_fft, hop_length, win_length):
     num_samples = y.shape[-1]
 
     if num_dims == 3:
-        y = y.reshape(-1, num_samples)  # [B * C ,T]
+        y = y.reshape(-1, num_samples)
 
-    complex_stft = torch.stft(
-        y,
-        n_fft,
-        hop_length,
-        win_length,
-        window=torch.hann_window(n_fft, device=y.device),
-        return_complex=True,
-    )
+    complex_stft = torch.stft(y, n_fft, hop_length, win_length, window=torch.hann_window(n_fft, device=y.device),
+                              return_complex=True)
     _, num_freqs, num_frames = complex_stft.shape
 
     if num_dims == 3:
         complex_stft = complex_stft.reshape(batch_size, -1, num_freqs, num_frames)
 
-    mag = torch.abs(complex_stft)
-    phase = torch.angle(complex_stft)
-    real = complex_stft.real
-    imag = complex_stft.imag
+    mag, phase = torch.abs(complex_stft), torch.angle(complex_stft)
+    real, imag = complex_stft.real, complex_stft.imag
     return mag, phase, real, imag
 
 
 def istft(features, n_fft, hop_length, win_length, length=None, input_type="complex"):
-    """Wrapper of the official torch.istft.
+    """
+    Wrapper of the official torch.istft
 
     Args:
         features: [B, F, T] (complex) or ([B, F, T], [B, F, T]) (mag and phase)
@@ -77,18 +72,10 @@ def istft(features, n_fft, hop_length, win_length, length=None, input_type="comp
         mag, phase = features
         features = torch.complex(mag * torch.cos(phase), mag * torch.sin(phase))
     else:
-        raise NotImplementedError(
-            "Only 'real_imag', 'complex', and 'mag_phase' are supported"
-        )
+        raise NotImplementedError("Only 'real_imag', 'complex', and 'mag_phase' are supported")
 
-    return torch.istft(
-        features,
-        n_fft,
-        hop_length,
-        win_length,
-        window=torch.hann_window(n_fft, device=features.device),
-        length=length,
-    )
+    return torch.istft(features, n_fft, hop_length, win_length, window=torch.hann_window(n_fft, device=features.device),
+                       length=length)
 
 
 def mag_phase(complex_tensor):
@@ -104,7 +91,7 @@ def norm_amplitude(y, scalar=None, eps=1e-6):
 
 
 def tailor_dB_FS(y, target_dB_FS=-25, eps=1e-6):
-    rms = np.sqrt(np.mean(y**2))
+    rms = np.sqrt(np.mean(y ** 2))
     scalar = 10 ** (target_dB_FS / 20) / (rms + eps)
     y *= scalar
     return y, rms, scalar
@@ -149,10 +136,9 @@ def aligned_subsample(data_a, data_b, sub_sample_length):
         return data_a, data_b
 
 
-def subsample(
-    data, sub_sample_length, start_position: int = -1, return_start_position=False
-):
-    """Randomly select fixed-length data from.
+def subsample(data, sub_sample_length, start_position: int = -1, return_start_position=False):
+    """
+    Randomly select fixed-length data from 
 
     Args:
         data: **one-dimensional data**
@@ -182,14 +168,15 @@ def subsample(
 
 
 def overlap_cat(chunk_list, dim=-1):
-    """Overlap concatenate (50%) a list of tensors.
+    """
+    按照 50% 的 overlap 沿着最后一个维度对 chunk_list 进行拼接
 
     Args:
-        dim: which dimension to concatenate
+        dim: 需要拼接的维度
         chunk_list(list): [[B, T], [B, T], ...]
 
     Returns:
-        concatenated tensor of shape [B, T]
+        overlap 拼接后
     """
     overlap_output = []
     for i, chunk in enumerate(chunk_list):
@@ -205,7 +192,8 @@ def overlap_cat(chunk_list, dim=-1):
 
 
 def activity_detector(audio, fs=16000, activity_threshold=0.13, target_level=-25, eps=1e-6):
-    """Return the percentage of the time the audio signal is above an energy threshold
+    """
+    Return the percentage of the time the audio signal is above an energy threshold
 
     Args:
         audio:
@@ -233,17 +221,13 @@ def activity_detector(audio, fs=16000, activity_threshold=0.13, target_level=-25
     while sample_start < len(audio):
         sample_end = min(sample_start + window_samples, len(audio))
         audio_win = audio[sample_start:sample_end]
-        frame_rms = 20 * np.log10(sum(audio_win**2) + eps)
-        frame_energy_prob = 1.0 / (1 + np.exp(-(a + b * frame_rms)))
+        frame_rms = 20 * np.log10(sum(audio_win ** 2) + eps)
+        frame_energy_prob = 1. / (1 + np.exp(-(a + b * frame_rms)))
 
         if frame_energy_prob > prev_energy_prob:
-            smoothed_energy_prob = frame_energy_prob * alpha_att + prev_energy_prob * (
-                1 - alpha_att
-            )
+            smoothed_energy_prob = frame_energy_prob * alpha_att + prev_energy_prob * (1 - alpha_att)
         else:
-            smoothed_energy_prob = frame_energy_prob * alpha_rel + prev_energy_prob * (
-                1 - alpha_rel
-            )
+            smoothed_energy_prob = frame_energy_prob * alpha_rel + prev_energy_prob * (1 - alpha_rel)
 
         if smoothed_energy_prob > activity_threshold:
             active_frames += 1
@@ -256,7 +240,9 @@ def activity_detector(audio, fs=16000, activity_threshold=0.13, target_level=-25
 
 
 def batch_shuffle_frequency(tensor, indices=None):
-    """Randomly shuffle frequency of a spectrogram and return shuffle indices.
+    """
+
+    Randomly shuffle frequency of a spectrogram and return shuffle indices.
 
     Args:
         tensor: input tensor with batch dim
@@ -296,10 +282,7 @@ def batch_shuffle_frequency(tensor, indices=None):
     batch_size, num_channels, num_freqs, num_frames = tensor.shape
 
     if not torch.is_tensor(indices):
-        indices = torch.stack(
-            [torch.randperm(num_freqs, device=tensor.device) for _ in range(batch_size)],
-            dim=0,
-        )
+        indices = torch.stack([torch.randperm(num_freqs, device=tensor.device) for _ in range(batch_size)], dim=0)
         indices = indices[:, None, :, None].repeat(1, num_channels, 1, num_frames)
 
     out = torch.gather(tensor, dim=2, index=indices)
@@ -307,16 +290,15 @@ def batch_shuffle_frequency(tensor, indices=None):
 
 
 def drop_band(input, num_groups=2):
-    """Reduce computational complexity of the sub-band part in the FullSubNet model.
+    """
+    Reduce computational complexity of the sub-band part in the FullSubNet model.
 
     Shapes:
         input: [B, C, F, T]
         return: [B, C, F // num_groups, T]
     """
     batch_size, _, num_freqs, _ = input.shape
-    assert (
-        batch_size > num_groups
-    ), f"Batch size = {batch_size}, num_groups = {num_groups}. The batch size should larger than the num_groups."
+    assert batch_size > num_groups, f"Batch size = {batch_size}, num_groups = {num_groups}. The batch size should larger than the num_groups."
 
     if num_groups <= 1:
         # No demand for grouping
@@ -325,20 +307,16 @@ def drop_band(input, num_groups=2):
     # Each sample must has the same number of the frequencies for parallel training.
     # Therefore, we need to drop those remaining frequencies in the high frequency part.
     if num_freqs % num_groups != 0:
-        input = input[..., : (num_freqs - (num_freqs % num_groups)), :]
+        input = input[..., :(num_freqs - (num_freqs % num_groups)), :]
         num_freqs = input.shape[2]
 
     output = []
     for group_idx in range(num_groups):
-        samples_indices = torch.arange(
-            group_idx, batch_size, num_groups, device=input.device
-        )
+        samples_indices = torch.arange(group_idx, batch_size, num_groups, device=input.device)
         freqs_indices = torch.arange(group_idx, num_freqs, num_groups, device=input.device)
 
         selected_samples = torch.index_select(input, dim=0, index=samples_indices)
-        selected = torch.index_select(
-            selected_samples, dim=2, index=freqs_indices
-        )  # [B, C, F // num_groups, T]
+        selected = torch.index_select(selected_samples, dim=2, index=freqs_indices)  # [B, C, F // num_groups, T]
 
         output.append(selected)
 
@@ -346,7 +324,9 @@ def drop_band(input, num_groups=2):
 
 
 class ChannelWiseLayerNorm(nn.LayerNorm):
-    """Channel wise layer normalization"""
+    """
+    Channel wise layer normalization
+    """
 
     def __init__(self, *args, **kwargs):
         super(ChannelWiseLayerNorm, self).__init__(*args, **kwargs)
@@ -356,7 +336,8 @@ class ChannelWiseLayerNorm(nn.LayerNorm):
         x: BS x N x K
         """
         if x.dim() != 3:
-            raise RuntimeError("{} accept 3D tensor as input".format(self.__name__))
+            raise RuntimeError("{} accept 3D tensor as input".format(
+                self.__name__))
         # BS x N x K => BS x K x N
         x = torch.transpose(x, 1, 2)
         x = super(ChannelWiseLayerNorm, self).forward(x)
@@ -364,12 +345,205 @@ class ChannelWiseLayerNorm(nn.LayerNorm):
         return x
 
 
+class DirectionalFeatureComputer(nn.Module):
+    def __init__(
+            self,
+            n_fft,
+            win_length,
+            hop_length,
+            input_features,
+            mic_pairs,
+            lps_channel,
+            use_cos_IPD=True,
+            use_sin_IPD=False,
+            eps=1e-8
+    ):
+        super().__init__()
+        self.eps = eps
+        self.input_features = input_features
+
+        # STFT setting
+        self.n_fft = n_fft
+        self.win_length = win_length
+        self.hop_length = hop_length
+        self.num_freqs = n_fft // 2 + 1
+        self.stft = partial(torch.stft, n_fft=n_fft, win_length=win_length, hop_length=hop_length)
+        self.istft = partial(torch.istft, n_fft=n_fft, win_length=win_length, hop_length=hop_length)
+
+        # IPD setting
+        self.mic_pairs = np.array(mic_pairs)
+        self.num_mic_pairs = self.mic_pairs.shape[0]
+        self.ipd_left = [t[0] for t in mic_pairs]
+        self.ipd_right = [t[1] for t in mic_pairs]
+        self.use_cos_IPD = use_cos_IPD
+        self.use_sin_IPD = use_sin_IPD
+
+        self.lps_channel = lps_channel
+
+        self.directional_feature_dim = 0
+        if 'LPS' in self.input_features:
+            self.directional_feature_dim += self.num_freqs
+            self.lps_layer_norm = ChannelWiseLayerNorm(self.num_freqs)
+
+        if 'IPD' in self.input_features:
+            self.directional_feature_dim += self.num_freqs * self.num_mic_pairs
+            if self.use_sin_IPD:
+                self.directional_feature_dim += self.num_freqs * self.num_mic_pairs
+
+    def compute_ipd(self, phase):
+        """
+        Args
+            phase: phase of shape [B, M, F, K]
+        Returns
+            IPD  of shape [B, I, F, K]
+        """
+        cos_ipd = torch.cos(phase[:, self.ipd_left] - phase[:, self.ipd_right])
+        sin_ipd = torch.sin(phase[:, self.ipd_left] - phase[:, self.ipd_right])
+        return cos_ipd, sin_ipd
+
+    def forward(self, magnitude, phase, real, imag):
+        """
+        Args:
+            y: input mixture waveform with shape [B, M, T]
+
+        Notes:
+            B - batch_size
+            M - num_channels
+            C - num_speakers
+            F - num_freqs
+            T - seq_len or num_samples
+            K - num_frames
+            I - IPD feature_size
+
+        Returns:
+            Spatial features and directional features of shape [B, ?, K]
+        """
+        batch_size, num_channels, num_freqs, num_frames = magnitude.shape
+
+        directional_feature = []
+        if "LPS" in self.input_features:
+            lps = torch.log(magnitude[:, self.lps_channel,
+                            ...] ** 2 + self.eps)  # [B, F, K], the 4-th channel, which is counted from right to left.
+            lps = self.lps_layer_norm(lps)
+            directional_feature.append(lps)
+
+        if "IPD" in self.input_features:
+            cos_ipd, sin_ipd = self.compute_ipd(phase)  # [B, I, F, K]
+            cos_ipd = cos_ipd.view(batch_size, -1, num_frames)  # [B, I * F, K]
+            sin_ipd = sin_ipd.view(batch_size, -1, num_frames)
+            directional_feature.append(cos_ipd)
+            if self.use_sin_IPD:
+                directional_feature.append(sin_ipd)
+
+        directional_feature = torch.cat(directional_feature, dim=1)
+
+        return directional_feature
+
+
+class ChannelDirectionalFeatureComputer(nn.Module):
+    def __init__(
+            self,
+            n_fft,
+            win_length,
+            hop_length,
+            input_features,
+            mic_pairs,
+            lps_channel,
+            use_cos_IPD=True,
+            use_sin_IPD=False,
+            eps=1e-8
+    ):
+        super().__init__()
+        self.eps = eps
+        self.input_features = input_features
+
+        # STFT setting
+        self.stft = CustomSTFT(frame_len=win_length, frame_hop=hop_length, num_fft=n_fft)
+        self.num_freqs = n_fft // 2 + 1
+
+        # IPD setting
+        self.mic_pairs = np.array(mic_pairs)
+        self.num_mic_pairs = self.mic_pairs.shape[0]
+        self.ipd_left = [t[0] for t in mic_pairs]
+        self.ipd_right = [t[1] for t in mic_pairs]
+        self.use_cos_IPD = use_cos_IPD
+        self.use_sin_IPD = use_sin_IPD
+
+        self.lps_channel = lps_channel
+
+        self.directional_feature_dim = 0
+        if 'LPS' in self.input_features:
+            self.directional_feature_dim += 1
+
+        if 'IPD' in self.input_features:
+            self.directional_feature_dim += self.num_mic_pairs
+            if self.use_sin_IPD:
+                self.directional_feature_dim += self.num_mic_pairs
+
+    def compute_ipd(self, phase):
+        """
+        Args
+            phase: phase of shape [B, M, F, K]
+        Returns
+            IPD  pf shape [B, I, F, K]
+        """
+        cos_ipd = torch.cos(phase[:, self.ipd_left] - phase[:, self.ipd_right])
+        sin_ipd = torch.sin(phase[:, self.ipd_left] - phase[:, self.ipd_right])
+        return cos_ipd, sin_ipd
+
+    def forward(self, y):
+        """
+        Args:
+            y: input mixture waveform with shape [B, M, T]
+
+        Notes:
+            B - batch_size
+            M - num_channels
+            C - num_speakers
+            F - num_freqs
+            T - seq_len or num_samples
+            K - num_frames
+            I - IPD feature_size
+
+        Returns:
+            Spatial features and directional features of shape [B, ?, K]
+        """
+        batch_size, num_channels, num_samples = y.shape
+        y = y.view(-1, num_samples)  # [B * M, T]
+        magnitude, phase, real, imag = self.stft(y)
+        _, num_freqs, num_frames = phase.shape  # [B * M, F, K]
+
+        magnitude = magnitude.view(batch_size, num_channels, num_freqs, num_frames)
+        phase = phase.view(batch_size, num_channels, num_freqs, num_frames)
+        real = real.view(batch_size, num_channels, num_freqs, num_frames)
+        imag = imag.view(batch_size, num_channels, num_freqs, num_frames)
+
+        directional_feature = []
+        if "LPS" in self.input_features:
+            lps = torch.log(magnitude[:, self.lps_channel,
+                            ...] ** 2 + self.eps)  # [B, F, K], the 4-th channel, which is counted from right to left.
+            lps = lps[:, None, ...]
+            directional_feature.append(lps)
+
+        if "IPD" in self.input_features:
+            cos_ipd, sin_ipd = self.compute_ipd(phase)  # [B, I, F, K]
+            directional_feature.append(cos_ipd)
+
+            if self.use_sin_IPD:
+                directional_feature.append(sin_ipd)
+
+        directional_feature = torch.cat(directional_feature, dim=1)
+
+        # [B, C + I, F, T], [B, C, F, T], [B, C, F, T]
+        return directional_feature, magnitude, phase, real, imag
+
+
 def hz_to_bark(hz):
-    return 26.81 / (1 + 1960.0 / hz) - 0.53
+    return 26.81 / (1 + 1960. / hz) - 0.53
 
 
 def bark_to_hz(bark):
-    return 1960.0 / (26.81 / (0.53 + bark) - 1)
+    return 1960. / (26.81 / (0.53 + bark) - 1)
 
 
 def bark_filter_bank(num_filters, n_fft, sr, low_freq, high_freq):
@@ -384,13 +558,18 @@ def bark_filter_bank(num_filters, n_fft, sr, low_freq, high_freq):
     #     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 36, 38, 40, 42,
     #      44, 46, 48, 56, 64, 72, 80, 92, 104, 116, 128, 144, 160, 176, 192, 208, 232, 256])
 
-    print(bin.shape)
+    #print(bin.shape)
 
     fbank = np.zeros([num_filters, n_fft // 2 + 1])
     for j in range(0, num_filters):
-        print(j)
+        #print(j)
         for i in range(int(bin[j]), int(bin[j + 1])):
             fbank[j, i] = (i - bin[j]) / (bin[j + 1] - bin[j])
         for i in range(int(bin[j + 1]), int(bin[j + 2])):
             fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - bin[j + 1])
     return fbank
+
+
+if __name__ == '__main__':
+    fband = bark_filter_bank(56, 512, 16000, 100, 8000)
+    #print(fband.shape)
