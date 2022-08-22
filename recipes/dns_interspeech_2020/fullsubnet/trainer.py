@@ -31,7 +31,8 @@ class Trainer(BaseTrainer):
             cIRM = build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_imag)  # [B, F, T, 2]
             cIRM = drop_band(
                 cIRM.permute(0, 3, 1, 2),  # [B, 2, F ,T]
-                self.model.module.num_groups_in_drop_band
+                #self.model.module.num_groups_in_drop_band
+                self.model.num_groups_in_drop_band
             ).permute(0, 2, 3, 1)
 
             with autocast(enabled=self.use_amp):
