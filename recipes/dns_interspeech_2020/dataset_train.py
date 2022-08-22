@@ -191,7 +191,7 @@ class Dataset(BaseDataset):
         #noise_y = self._select_noise_y(target_length=len(clean_y))
         noisy_file = self.noisy_dataset_list[item]
         noisy_y = load_wav(noisy_file, sr=self.sr)
-        noisy_y = subsample(noisy_y, sub_sample_length=int(self.sub_sample_length) * self.sr)
+        noisy_y = subsample(noisy_y, sub_sample_length=int(self.sub_sample_length * self.sr))
         assert len(clean_y) == len(noisy_y), f"Inequality: {len(clean_y)} {len(noisy_y)}"
 
         snr = self._random_select_from(self.snr_list)
