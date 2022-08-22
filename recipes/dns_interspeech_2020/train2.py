@@ -13,7 +13,7 @@ sys.path.append(os.path.join(cwd, '../..'))
 from audio_zen.model.module.sequence_model import SequenceModel
 from audio_zen.utils import initialize_module
 from fullsubnet.model import Model
-from torchsummary import summary
+#from torchsummary import summary
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -106,7 +106,7 @@ def entry(config, resume, only_validation):
     for layer in modules:
         layer.requires_grad_(False)
 
-    summary(model)
+    #summary(model)
     
     paramsFt = [{'params': module.to(DEVICE).parameters()} for module in modules]
 
