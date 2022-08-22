@@ -106,8 +106,8 @@ def entry(config, resume, only_validation):
     print('\nValidation dataset noisy samples:')
     [print(f'{data}') for data in valid_dataloader.dataset.noisy_dataset_list[:10]]'''
     
-    print(f'Train len: {len(train_dataloader}')
-    print(f'Val len: {len(valid_dataloader}')
+    print(f'Train len: {len(train_dataloader)}')
+    print(f'Val len: {len(valid_dataloader)}')
     
     #model = initialize_module(config["model"]["path"], args=config["model"]["args"])
 
