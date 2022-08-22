@@ -78,12 +78,12 @@ def entry(config, resume, only_validation):
     # On the contrary, setting "Sampler=None, shuffle=True", each GPU will get all data in the whole dataset.
     
     train_dataset = initialize_module(config["train_dataset"]["path"], args=config["train_dataset"]["args"])
-    train_dataset.clean_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in train_dataset.clean_dataset_list]
-    train_dataset.noisy_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in train_dataset.noisy_dataset_list]
+    #train_dataset.clean_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in train_dataset.clean_dataset_list]
+    #train_dataset.noisy_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in train_dataset.noisy_dataset_list]
     
     valid_dataset = initialize_module(config["validation_dataset"]["path"], args=config["validation_dataset"]["args"])
-    valid_dataset.clean_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in valid_dataset.clean_dataset_list]
-    valid_dataset.noisy_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in valid_dataset.noisy_dataset_list]
+    #valid_dataset.clean_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in valid_dataset.clean_dataset_list]
+    #valid_dataset.noisy_dataset_list = [os.path.join('/kaggle/input/fsn-data', sample) for sample in valid_dataset.noisy_dataset_list]
     
     train_dataloader = DataLoader(
         dataset=train_dataset,
