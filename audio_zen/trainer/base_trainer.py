@@ -24,6 +24,7 @@ from audio_zen.utils import prepare_empty_dir, ExecutionTime
 plt.switch_backend('agg')
 console = Console()
 
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class BaseTrainer:
     def __init__(self, config, resume, only_validation, model, loss_function, optimizer):
@@ -125,7 +126,7 @@ class BaseTrainer:
         model_path = model_path.expanduser().absolute()
         assert model_path.exists(), f"The file {model_path.as_posix()} is not exist. please check path."
 
-        model_checkpoint = torch.load(model_path.as_posix(), map_location="cpu")
+        model_checkpoint = torch.load(model_path.as_posix(), map_location=DEVICE)
         self.model.load_state_dict(model_checkpoint["model"], strict=False)
         #self.model.to(self.rank)
 
@@ -143,7 +144,7 @@ class BaseTrainer:
         # Load it on the CPU and later use .to(device) on the model
         # Maybe slightly slow than use map_location="cuda:<...>"
         # https://stackoverflow.com/questions/61642619/pytorch-distributed-data-parallel-confusion
-        checkpoint = torch.load(latest_model_path.as_posix(), map_location="cpu")
+        checkpoint = torch.load(latest_model_path.as_posix(), map_location=DEVICE)
 
         # Make sure all processes (GPUs) do not start loading before the saving is finished.
         # see https://stackoverflow.com/questions/59760328/how-does-torch-distributed-barrier-work

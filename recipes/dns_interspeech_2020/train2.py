@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 import toml
 import random
 import torch
@@ -16,7 +17,7 @@ from torchsummary import summary
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-class FullSubNetFtModel(Model):
+'''class FullSubNetFtModel(Model):
 
     def __init__(self,
                  num_freqs,
@@ -47,9 +48,9 @@ class FullSubNetFtModel(Model):
         model.load_state_dict(model_static_dict)
         model.to(device)
         #model.eval()
-        #return model, model_checkpoint["epoch"]
+        #return model, model_checkpoint["epoch"]'''
 
-configPath = Path(os.path.join(cwd, 'fullsubnet/train.toml')).expanduser().absolute()
+'''configPath = Path(os.path.join(cwd, 'fullsubnet/train.toml')).expanduser().absolute()
 config = toml.load(configPath.as_posix())
 modelArgs = config["model"]["args"]
 model = FullSubNetFtModel(**modelArgs)
@@ -58,15 +59,7 @@ checkpointPath = os.path.join(cwd, 'fullsubnet/fullsubnet_best_model_58epochs.ta
 modelCheckpoint = torch.load(checkpointPath, map_location=DEVICE)
 modelStateDict = modelCheckpoint["model"]
 model.load_state_dict(modelStateDict)
-model.to(DEVICE)
-
-'''layers = np.array([module for module in model.modules() if not isinstance(module, SequenceModel)])
-for module in layers[[1, 4]]:
-    module.requires_grad_(False)
-
-summary(model)
-
-print(2)'''
+model.to(DEVICE)'''
 
 
 #sys.path.append(os.path.abspath(os.path.join(__file__, "..", "..", "..")))  # without installation, add /path/to/Audio-ZEN
@@ -97,11 +90,30 @@ def entry(config, resume, only_validation):
         **config["validation_dataset"]["dataloader"]
     )
 
-    model = initialize_module(config["model"]["path"], args=config["model"]["args"])
+    #model = initialize_module(config["model"]["path"], args=config["model"]["args"])
+
+    checkpointPath = os.path.join(cwd, 'fullsubnet/fullsubnet_best_model_58epochs.tar')
+    model = initialize_module(config["model"]["path"], args=config["model"]["args"], initialize=True)
+    modelCheckpoint = torch.load(checkpointPath, map_location=DEVICE)
+    modelStateDict = modelCheckpoint["model"]
+    model.load_state_dict(modelStateDict)
+    model.to(DEVICE)
+    model.train()
+
+    modules = [module for module in model.modules() if not (isinstance(module, SequenceModel) or isinstance(module, Model))]
+    modules = [module for module in modules if not isinstance(module, torch.nn.Linear)]
+
+    for layer in modules:
+        layer.requires_grad_(False)
+
+    summary(model)
+    
+    paramsFt = [{'params': module.to(DEVICE).parameters()} for module in modules]
 
     optimizer = torch.optim.Adam(
-        params=model.parameters(),
-        lr=config["optimizer"]["lr"],
+        #params=model.parameters(),
+        params=paramsFt,
+        lr=config["optimizer"]["lr"]/10,
         betas=(config["optimizer"]["beta1"], config["optimizer"]["beta2"])
     )
 
@@ -122,7 +134,7 @@ def entry(config, resume, only_validation):
 
     trainer.train()
 
-
+'''
 class CustomArguments:
 
     def __init__(self):
@@ -131,11 +143,18 @@ class CustomArguments:
         self.resume = False
         self.only_validation = False
         self.preloaded_model_path = os.path.join(cwd, 'fullsubnet/fullsubnet_best_model_58epochs.tar')
-
+'''
 
 if __name__ == '__main__':
 
-    args = CustomArguments()
+    parser = argparse.ArgumentParser(description='FullSubNet')
+    parser.add_argument("-C", "--configuration", required=True, type=str, help="Configuration (*.toml).")
+    parser.add_argument("-R", "--resume", action="store_true", help="Resume the experiment from latest checkpoint.")
+    parser.add_argument("-V", "--only_validation", action="store_true", help="Only run validation, which is used for debugging.")
+    parser.add_argument("-P", "--preloaded_model_path", type=str, help="Path of the *.pth file of a model.")
+    args = parser.parse_args()
+
+    #args = CustomArguments()
     
     os.environ.setdefault('LOCAL_RANK', '0')
     local_rank = int(os.environ["LOCAL_RANK"])

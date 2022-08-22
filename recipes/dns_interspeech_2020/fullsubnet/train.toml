@@ -26,10 +26,12 @@ beta2 = 0.999
 [train_dataset]
 path = "dataset_train.Dataset"
 [train_dataset.args]
-clean_dataset = "D:/synth_data/clean.txt"
+#clean_dataset = "D:/synth_data/clean.txt"
+clean_dataset = "/kaggle/input/fsn-data/clean.txt"
 clean_dataset_limit = false
 clean_dataset_offset = 0
-noisy_dataset = "D:/synth_data/noisy.txt"
+#noisy_dataset = "D:/synth_data/noisy.txt"
+noisy_dataset = "/kaggle/input/fsn-data/noisy.txt"
 noisy_dataset_limit = false
 noisy_dataset_offset = 0
 num_workers = 36
@@ -58,10 +60,12 @@ pin_memory = false
 [validation_dataset]
 path = "dataset_train.Dataset"
 [validation_dataset.args]
-clean_dataset = "D:/synth_data/clean_val.txt"
+#clean_dataset = "D:/synth_data/clean_val.txt"
+clean_dataset = "/kaggle/input/fsn-data/clean_val.txt"
 clean_dataset_limit = false
 clean_dataset_offset = 0
-noisy_dataset = "D:/synth_data/noisy_val.txt"
+#noisy_dataset = "D:/synth_data/noisy_val.txt"
+noisy_dataset = "/kaggle/input/fsn-data/noisy_val.txt"
 noisy_dataset_limit = false
 noisy_dataset_offset = 0
 num_workers = 36
@@ -108,7 +112,7 @@ num_groups_in_drop_band = 2
 path = "trainer.Trainer"
 [trainer.train]
 clip_grad_norm_value = 10
-epochs = 9999
+epochs = 200
 save_checkpoint_interval = 2
 [trainer.validation]
 save_max_metric_score = true
