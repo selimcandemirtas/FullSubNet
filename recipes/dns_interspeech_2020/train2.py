@@ -90,6 +90,15 @@ def entry(config, resume, only_validation):
         **config["validation_dataset"]["dataloader"]
     )
 
+    print('\nTrain dataset clean samples:')
+    [print(f'{data}') for data in train_dataloader.dataset.clean_dataset_list[:10]]
+    print('\nTrain dataset noisy samples:')
+    [print(f'{data}') for data in train_dataloader.dataset.noisy_dataset_list[:10]]
+    print('\nValidation dataset clean samples:')
+    [print(f'{data}') for data in validation_dataloader.dataset.clean_dataset_list[:10]]
+    print('\nValidation dataset noisy samples:')
+    [print(f'{data}') for data in validation_dataloader.dataset.noisy_dataset_list[:10]]
+    
     #model = initialize_module(config["model"]["path"], args=config["model"]["args"])
 
     checkpointPath = os.path.join(cwd, 'fullsubnet/fullsubnet_best_model_58epochs.tar')
