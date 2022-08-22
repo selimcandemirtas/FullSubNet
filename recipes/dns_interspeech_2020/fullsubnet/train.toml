@@ -120,4 +120,4 @@ validation_interval = 2
 [trainer.visualization]
 metrics = ["WB_PESQ", "NB_PESQ", "STOI", "SI_SDR"]
 n_samples = 10
-num_workers = 36
+num_workers = 2
