@@ -94,5 +94,5 @@ save_max_metric_score = true
 validation_interval = 2
 [trainer.visualization]
 metrics = ["WB_PESQ", "NB_PESQ", "STOI", "SI_SDR"]
-n_samples = 10
-num_workers = 0
+n_samples = 4
+num_workers = 4
