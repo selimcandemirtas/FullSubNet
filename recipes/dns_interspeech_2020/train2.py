@@ -89,12 +89,14 @@ def entry(config, resume, only_validation):
         dataset=train_dataset,
         shuffle=True,
         **config["train_dataset"]["dataloader"],
+        pin_memory_device='cuda'
     )
 
     valid_dataloader = DataLoader(
         dataset=valid_dataset,
         shuffle=True,
-        **config["validation_dataset"]["dataloader"]
+        **config["validation_dataset"]["dataloader"],
+        pin_memory_device='cuda'
     )
 
     print('\nTrain dataset clean samples:')
