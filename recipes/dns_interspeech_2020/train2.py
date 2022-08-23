@@ -71,7 +71,7 @@ def entry(config, resume, only_validation):
     torch.manual_seed(config["meta"]["seed"])  # For both CPU and GPU
     np.random.seed(config["meta"]["seed"])
     random.seed(config["meta"]["seed"])
-    torch.cuda.device('gpu') if torch.cuda.is_available() else torch.device('cpu')
+    torch.cuda.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     #print(f"{rank + 1} process initialized.")
 
     # The DistributedSampler will split the dataset into the several cross-process parts.
