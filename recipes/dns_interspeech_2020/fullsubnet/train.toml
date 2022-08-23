@@ -87,11 +87,11 @@ num_groups_in_drop_band = 2
 path = "trainer.Trainer"
 [trainer.train]
 clip_grad_norm_value = 10
-epochs = 4
-save_checkpoint_interval = 2
+epochs = 1
+save_checkpoint_interval = 1
 [trainer.validation]
 save_max_metric_score = true
-validation_interval = 2
+validation_interval = 1
 [trainer.visualization]
 metrics = ["WB_PESQ", "NB_PESQ", "STOI", "SI_SDR"]
 n_samples = 4
