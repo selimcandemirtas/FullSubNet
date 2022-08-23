@@ -120,14 +120,15 @@ def entry(config, resume, only_validation):
     model.train()
 
     modules = [module for module in model.modules() if not (isinstance(module, SequenceModel) or isinstance(module, Model))]
-    modules = [module for module in modules if not isinstance(module, torch.nn.Linear)]
+    frozenModules = [module for module in modules if not isinstance(module, torch.nn.Linear)]
+    trainableModules = [module for module in modules if isinstance(module, torch.nn.Linear)]
 
-    for layer in modules:
+    for layer in frozenModules:
         layer.requires_grad_(False)
 
     #summary(model)
     
-    paramsFt = [{'params': module.to(DEVICE).parameters()} for module in modules]
+    paramsFt = [{'params': module.to(DEVICE).parameters()} for module in trainableModules]
 
     optimizer = torch.optim.Adam(
         #params=model.parameters(),
