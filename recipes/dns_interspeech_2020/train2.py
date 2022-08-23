@@ -100,7 +100,7 @@ def entry(config, resume, only_validation):
         collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )'''
     valid_dataloader = DataLoader(
-        dataset=validation_dataset,
+        dataset=valid_dataset,
         num_workers=0,
         batch_size=1,
         collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
