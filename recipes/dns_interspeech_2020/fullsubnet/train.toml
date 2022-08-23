@@ -34,7 +34,7 @@ clean_dataset_offset = 0
 noisy_dataset = "/kaggle/input/fsn-data/noisy.txt"
 noisy_dataset_limit = false
 noisy_dataset_offset = 0
-num_workers = 2
+num_workers = 0
 pre_load_clean_dataset = false
 pre_load_noise = false
 pre_load_rir = false
@@ -52,7 +52,7 @@ target_dB_FS_floating_value = 10
 
 [train_dataset.dataloader]
 batch_size = 16
-num_workers = 2
+num_workers = 0
 drop_last = true
 pin_memory = false
 
@@ -68,7 +68,7 @@ clean_dataset_offset = 0
 noisy_dataset = "/kaggle/input/fsn-data/noisy_val.txt"
 noisy_dataset_limit = false
 noisy_dataset_offset = 0
-num_workers = 2
+num_workers = 0
 pre_load_clean_dataset = false
 pre_load_noise = false
 pre_load_rir = false
@@ -85,7 +85,7 @@ target_dB_FS_floating_value = 10
 
 [validation_dataset.dataloader]
 batch_size = 2
-num_workers = 2
+num_workers = 0
 drop_last = true
 pin_memory = false
 
@@ -120,4 +120,4 @@ validation_interval = 2
 [trainer.visualization]
 metrics = ["WB_PESQ", "NB_PESQ", "STOI", "SI_SDR"]
 n_samples = 10
-num_workers = 2
+num_workers = 0
