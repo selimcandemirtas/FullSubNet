@@ -5,6 +5,7 @@ import toml
 import random
 import torch
 from torch.utils.data import DataLoader
+from torch.utils.data.dataloader import default_collate
 import numpy as np
 from pathlib import Path
 
@@ -89,14 +90,14 @@ def entry(config, resume, only_validation):
         dataset=train_dataset,
         shuffle=True,
         **config["train_dataset"]["dataloader"],
-        pin_memory_device='cuda'
+        collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )
 
     valid_dataloader = DataLoader(
         dataset=valid_dataset,
         shuffle=True,
         **config["validation_dataset"]["dataloader"],
-        pin_memory_device='cuda'
+        collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )
 
     print('\nTrain dataset clean samples:')
