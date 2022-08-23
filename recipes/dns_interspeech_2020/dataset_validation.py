@@ -11,7 +11,8 @@ from audio_zen.utils import basename
 class Dataset(BaseDataset):
     def __init__(
             self,
-            dataset_directory,
+            noisy_txt_path,
+            clean_txt_path,
             sr,
     ):
         """
@@ -26,10 +27,14 @@ class Dataset(BaseDataset):
                 clean_y/
         """
         super(Dataset, self).__init__()
-        noisy_files_list = []
+        #noisy_files_list = []
+        
+        noisy_files_list = [line.rstrip('\n') for line in open(noisy_txt_path, "r")]
+        clean_files_list = [line.rstrip('\n') for line in open(clean_txt_path, "r")]
 
-        dataset_dir = Path(dataset_directory).expanduser().absolute()
-        noisy_files_list += librosa.util.find_files((dataset_dir / "noisy").as_posix())
+        #dataset_dir = Path(dataset_directory).expanduser().absolute()
+        dataset_dir = str(Path(noisy_txt_path).parent)
+        #noisy_files_list += librosa.util.find_files((dataset_dir / "noisy").as_posix())
 
         self.length = len(noisy_files_list)
         self.noisy_files_list = noisy_files_list
