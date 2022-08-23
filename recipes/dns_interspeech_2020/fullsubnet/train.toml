@@ -57,38 +57,6 @@ drop_last = true
 pin_memory = false
 
 
-'''[validation_dataset]
-path = "dataset_train.Dataset"
-[validation_dataset.args]
-#clean_dataset = "D:/synth_data/clean_val.txt"
-clean_dataset = "/kaggle/input/fsn-data/clean_val.txt"
-clean_dataset_limit = false
-clean_dataset_offset = 0
-#noisy_dataset = "D:/synth_data/noisy_val.txt"
-noisy_dataset = "/kaggle/input/fsn-data/noisy_val.txt"
-noisy_dataset_limit = false
-noisy_dataset_offset = 0
-num_workers = 0
-pre_load_clean_dataset = false
-pre_load_noise = false
-pre_load_rir = false
-reverb_proportion = 0.75
-rir_dataset = "~/Datasets/DNS-Challenge-INTERSPEECH/datasets/rir.txt"
-rir_dataset_limit = false
-rir_dataset_offset = 0
-silence_length = 0.2
-snr_range = [-5, 20]
-sr = 16000
-sub_sample_length = 3.072
-target_dB_FS = -25
-target_dB_FS_floating_value = 10
-
-[validation_dataset.dataloader]
-batch_size = 2
-num_workers = 0
-drop_last = true
-pin_memory = false'''
-
 [validation_dataset]
 path = "dataset_validation.Dataset"
 [validation_dataset.args]
