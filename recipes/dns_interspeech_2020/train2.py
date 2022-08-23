@@ -106,17 +106,17 @@ def entry(config, resume, only_validation):
         #collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )
 
-    print('\nTrain dataset clean samples:')
-    [print(f'{data}') for data in train_dataloader.dataset.clean_dataset_list[:10]]
-    print('\nTrain dataset noisy samples:')
-    [print(f'{data}') for data in train_dataloader.dataset.noisy_dataset_list[:10]]
+    #print('\nTrain dataset clean samples:')
+    #[print(f'{data}') for data in train_dataloader.dataset.clean_dataset_list[:10]]
+    #print('\nTrain dataset noisy samples:')
+    #[print(f'{data}') for data in train_dataloader.dataset.noisy_dataset_list[:10]]
     #print('\nValidation dataset clean samples:')
     #[print(f'{data}') for data in valid_dataloader.dataset.clean_dataset_list[:10]]
     #print('\nValidation dataset noisy samples:')
     #[print(f'{data}') for data in valid_dataloader.dataset.noisy_dataset_list[:10]]
     
-    print(f'Train len: {len(train_dataloader)}')
-    print(f'Val len: {len(valid_dataloader)}')
+    #print(f'Train len: {len(train_dataloader)}')
+    #print(f'Val len: {len(valid_dataloader)}')
     
     #model = initialize_module(config["model"]["path"], args=config["model"]["args"])
 
