@@ -90,17 +90,17 @@ def STOI(ref, est, sr=16000):
 
 
 def WB_PESQ(ref, est, sr=16000):
-    print('REF')
-    print(f'Type: {type(ref)}')
-    print(f'Length: {len(ref)}')
-    print('Samples: ')
-    print(ref)
-    
     print('EST')
     print(f'Type: {type(est)}')
     print(f'Length: {len(est)}')
     print('Samples: ')
     print(est)
+    
+    print('REF')
+    print(f'Type: {type(ref)}')
+    print(f'Length: {len(ref)}')
+    print('Samples: ')
+    print(ref)
     
     return pesq(sr, ref, est, "wb")
 
