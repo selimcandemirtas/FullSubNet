@@ -87,7 +87,7 @@ num_groups_in_drop_band = 2
 path = "trainer.Trainer"
 [trainer.train]
 clip_grad_norm_value = 10
-epochs = 200
+epochs = 1
 save_checkpoint_interval = 2
 [trainer.validation]
 save_max_metric_score = true
