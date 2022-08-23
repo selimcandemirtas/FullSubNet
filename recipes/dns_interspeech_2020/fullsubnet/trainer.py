@@ -9,6 +9,7 @@ from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_
 
 plt.switch_backend('agg')
 
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class Trainer(BaseTrainer):
     def __init__(self, config, resume, only_validation, model, loss_function, optimizer, train_dataloader, validation_dataloader):
@@ -25,6 +26,8 @@ class Trainer(BaseTrainer):
 
             #noisy = noisy.to(self.rank)
             #clean = clean.to(self.rank)
+            noisy = noisy.to(DEVICE)
+            clean = clean.to(DEVICE)
 
             noisy_mag, noisy_phase, noisy_real, noisy_imag = self.torch_stft(noisy)
             _, _, clean_real, clean_imag = self.torch_stft(clean)
@@ -78,6 +81,8 @@ class Trainer(BaseTrainer):
 
             #noisy = noisy.to(self.rank)
             #clean = clean.to(self.rank)
+            noisy = noisy.to(DEVICE)
+            clean = clean.to(DEVICE)
 
             noisy_mag, noisy_phase, noisy_real, noisy_imag = self.torch_stft(noisy)
             _, _, clean_real, clean_imag = self.torch_stft(clean)
