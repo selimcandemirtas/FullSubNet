@@ -61,7 +61,7 @@ class Dataset(BaseDataset):
         # Find the corresponding clean speech using "parent_dir" and "file_id"
         #file_id = noisy_filename.split("_")[-1]
         file_id = noisy_filename.split('_')[0]
-        clean_filename = file_id + '_c.WAV'
+        clean_filename = file_id + '_c.WAVez'
 
         clean_file_path = noisy_file_path.replace(f"noisy/{noisy_filename}", f"clean/{clean_filename}")
 
