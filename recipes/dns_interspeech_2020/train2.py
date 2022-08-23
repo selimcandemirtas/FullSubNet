@@ -93,10 +93,18 @@ def entry(config, resume, only_validation):
         collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )
 
-    valid_dataloader = DataLoader(
+    '''valid_dataloader = DataLoader(
         dataset=valid_dataset,
         shuffle=True,
         **config["validation_dataset"]["dataloader"],
+        collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
+    )'''
+    valid_dataloader = DataLoader(
+        dataset=initialize_module(
+            config["validation_dataset"]["path"], args=config["validation_dataset"]["args"]
+        ),
+        num_workers=0,
+        batch_size=1,
         collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )
 
