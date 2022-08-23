@@ -57,7 +57,7 @@ drop_last = true
 pin_memory = false
 
 
-[validation_dataset]
+'''[validation_dataset]
 path = "dataset_train.Dataset"
 [validation_dataset.args]
 #clean_dataset = "D:/synth_data/clean_val.txt"
@@ -87,7 +87,14 @@ target_dB_FS_floating_value = 10
 batch_size = 2
 num_workers = 0
 drop_last = true
-pin_memory = false
+pin_memory = false'''
+
+[validation_dataset]
+path = "dataset_validation.Dataset"
+[validation_dataset.args]
+noisy_txt_path = "/kaggle/input/fsn-data/noisy_val.txt"
+clean_txt_path = "/kaggle/input/fsn-data/clean_val.txt"
+sr = 16000
 
 
 [model]
