@@ -125,7 +125,7 @@ class Trainer(BaseTrainer):
         #self.writer.add_scalar(f"Loss/Data", loss_total / len(self.valid_dataloader), epoch)
 
         validation_score = self.metrics_visualization(
-            noisy_y, clean, enhanced_y,
+            noisy_y, clean_y, enhanced_y,
             visualization_metrics, epoch, visualization_num_workers
         )
 
