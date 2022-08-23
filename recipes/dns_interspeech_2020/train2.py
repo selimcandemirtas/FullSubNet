@@ -100,9 +100,7 @@ def entry(config, resume, only_validation):
         collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
     )'''
     valid_dataloader = DataLoader(
-        dataset=initialize_module(
-            config["validation_dataset"]["path"], args=config["validation_dataset"]["args"]
-        ),
+        dataset=validation_dataset,
         num_workers=0,
         batch_size=1,
         collate_fn=lambda x: tuple(x_.to(DEVICE) for x_ in default_collate(x))
@@ -112,10 +110,10 @@ def entry(config, resume, only_validation):
     [print(f'{data}') for data in train_dataloader.dataset.clean_dataset_list[:10]]
     print('\nTrain dataset noisy samples:')
     [print(f'{data}') for data in train_dataloader.dataset.noisy_dataset_list[:10]]
-    print('\nValidation dataset clean samples:')
-    [print(f'{data}') for data in valid_dataloader.dataset.clean_dataset_list[:10]]
-    print('\nValidation dataset noisy samples:')
-    [print(f'{data}') for data in valid_dataloader.dataset.noisy_dataset_list[:10]]
+    #print('\nValidation dataset clean samples:')
+    #[print(f'{data}') for data in valid_dataloader.dataset.clean_dataset_list[:10]]
+    #print('\nValidation dataset noisy samples:')
+    #[print(f'{data}') for data in valid_dataloader.dataset.noisy_dataset_list[:10]]
     
     print(f'Train len: {len(train_dataloader)}')
     print(f'Val len: {len(valid_dataloader)}')
