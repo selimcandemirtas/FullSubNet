@@ -128,6 +128,8 @@ class Trainer(BaseTrainer):
             noisy_y, clean_y, enhanced_y,
             visualization_metrics, epoch, visualization_num_workers
         )
+        
+        print(f'Epoch {epoch} --- loss: {loss_total/len(self.valid_dataloader}, score: {validation_score*100:.4f}%')
 
         #return validation_score_list["No_reverb"]
         return validation_score
