@@ -285,12 +285,12 @@ class BaseTrainer:
             #score_on_noisy = Parallel(n_jobs=num_workers)(
             #    delayed(metrics.REGISTERED_METRICS[metric_name])(ref, est) for ref, est in zip(clean_list, noisy_list)
             #)
-            score_on_noisy = metrics.REGISTERED_METRICS[metric_name](ref, est) for ref, est in zip(clean_list, noisy_list)
+            score_on_noisy = [metrics.REGISTERED_METRICS[metric_name](ref, est) for ref, est in zip(clean_list, noisy_list)]
             #score_on_enhanced = Parallel(n_jobs=num_workers)(
             #    delayed(metrics.REGISTERED_METRICS[metric_name])(ref, est) for ref, est in
             #    zip(clean_list, enhanced_list)
             #)
-            score_on_enhanced = metrics.REGISTERED_METRICS[metric_name](ref, est) for ref, est in zip(clean_list, enhanced_list)
+            score_on_enhanced = [metrics.REGISTERED_METRICS[metric_name](ref, est) for ref, est in zip(clean_list, enhanced_list)]
 
             # Add mean value of the metric to tensorboard
             mean_score_on_noisy = np.mean(score_on_noisy)
