@@ -119,10 +119,10 @@ class Trainer(BaseTrainer):
         #for speech_type in ("With_reverb", "No_reverb"):
         #self.writer.add_scalar(f"Loss/Data", loss_total / len(self.valid_dataloader), epoch)
 
-            validation_score = self.metrics_visualization(
-                noisy_y, clean, enhanced_y,
-                visualization_metrics, epoch, visualization_num_workers
-            )
+        validation_score = self.metrics_visualization(
+            noisy_y, clean, enhanced_y,
+            visualization_metrics, epoch, visualization_num_workers
+        )
 
         #return validation_score_list["No_reverb"]
         return validation_score
