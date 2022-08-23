@@ -60,18 +60,21 @@ class Trainer(BaseTrainer):
         visualization_metrics = self.visualization_config["metrics"]
 
         loss_total = 0.0
-        loss_list = {"With_reverb": 0.0, "No_reverb": 0.0, }
-        item_idx_list = {"With_reverb": 0, "No_reverb": 0, }
-        noisy_y_list = {"With_reverb": [], "No_reverb": [], }
-        clean_y_list = {"With_reverb": [], "No_reverb": [], }
-        enhanced_y_list = {"With_reverb": [], "No_reverb": [], }
-        validation_score_list = {"With_reverb": 0.0, "No_reverb": 0.0}
+        #loss_list = {"With_reverb": 0.0, "No_reverb": 0.0, }
+        #item_idx_list = {"With_reverb": 0, "No_reverb": 0, }
+        item_idx = 0
+        #noisy_y_list = {"With_reverb": [], "No_reverb": [], }
+        noisy_y = []
+        #clean_y_list = {"With_reverb": [], "No_reverb": [], }
+        clean_y = []
+        #enhanced_y_list = {"With_reverb": [], "No_reverb": [], }
+        enhanced_y = []
+        #validation_score_list = {"With_reverb": 0.0, "No_reverb": 0.0}
+        validation_score = 0.0
 
-        # speech_type in ("with_reverb", "no_reverb")
-        for i, (noisy, clean, name, speech_type) in tqdm(enumerate(self.valid_dataloader), desc="Validation"):
+        for i, (noisy, clean, name) in tqdm(enumerate(self.valid_dataloader), desc="Validation"):
             assert len(name) == 1, "The batch size for the validation stage must be one."
             name = name[0]
-            speech_type = speech_type[0]
 
             #noisy = noisy.to(self.rank)
             #clean = clean.to(self.rank)
@@ -100,24 +103,26 @@ class Trainer(BaseTrainer):
             loss_total += loss
 
             # Separated loss
-            loss_list[speech_type] += loss
-            item_idx_list[speech_type] += 1
+            #loss_list[speech_type] += loss
+            item_idx += 1
 
-            if item_idx_list[speech_type] <= visualization_n_samples:
-                self.spec_audio_visualization(noisy, enhanced, clean, name, epoch, mark=speech_type)
+            if item_idx <= visualization_n_samples:
+                #self.spec_audio_visualization(noisy, enhanced, clean, name, epoch, mark=speech_type)
+                self.spec_audio_visualization(noisy, enhanced, clean, name, epoch)
 
-            noisy_y_list[speech_type].append(noisy)
-            clean_y_list[speech_type].append(clean)
-            enhanced_y_list[speech_type].append(enhanced)
+            noisy_y.append(noisy)
+            clean_y.append(clean)
+            enhanced_y.append(enhanced)
 
         self.writer.add_scalar(f"Loss/Validation_Total", loss_total / len(self.valid_dataloader), epoch)
 
-        for speech_type in ("With_reverb", "No_reverb"):
-            self.writer.add_scalar(f"Loss/{speech_type}", loss_list[speech_type] / len(self.valid_dataloader), epoch)
+        #for speech_type in ("With_reverb", "No_reverb"):
+        #self.writer.add_scalar(f"Loss/Data", loss_total / len(self.valid_dataloader), epoch)
 
-            validation_score_list[speech_type] = self.metrics_visualization(
-                noisy_y_list[speech_type], clean_y_list[speech_type], enhanced_y_list[speech_type],
-                visualization_metrics, epoch, visualization_num_workers, mark=speech_type
+            validation_score = self.metrics_visualization(
+                noisy_y, clean, enhanced_y,
+                visualization_metrics, epoch, visualization_num_workers
             )
 
-        return validation_score_list["No_reverb"]
+        #return validation_score_list["No_reverb"]
+        return validation_score
