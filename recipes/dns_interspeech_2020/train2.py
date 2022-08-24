@@ -128,7 +128,7 @@ def entry(config, resume, only_validation):
     model.to(DEVICE)
     model.train()
 
-    '''modules = [module for module in model.modules() if not (isinstance(module, SequenceModel) or isinstance(module, Model))]
+    modules = [module for module in model.modules() if not (isinstance(module, SequenceModel) or isinstance(module, Model))]
     frozenModules = [module for module in modules if not isinstance(module, torch.nn.Linear)]
     trainableModules = [module for module in modules if isinstance(module, torch.nn.Linear)]
 
@@ -137,11 +137,11 @@ def entry(config, resume, only_validation):
 
     #summary(model)
     
-    paramsFt = [{'params': module.to(DEVICE).parameters()} for module in trainableModules]'''
+    paramsFt = [{'params': module.to(DEVICE).parameters()} for module in trainableModules]
 
     optimizer = torch.optim.Adam(
-        params=model.parameters(),
-        #params=paramsFt,
+        #params=model.parameters(),
+        params=paramsFt,
         #lr=config["optimizer"]["lr"]/10,
         lr=config["optimizer"]["lr"]/10,
         betas=(config["optimizer"]["beta1"], config["optimizer"]["beta2"])
