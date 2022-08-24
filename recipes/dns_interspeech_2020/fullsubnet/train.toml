@@ -27,11 +27,11 @@ beta2 = 0.999
 path = "dataset_train.Dataset"
 [train_dataset.args]
 #clean_dataset = "D:/synth_data/clean.txt"
-clean_dataset = "/kaggle/input/turtel-txt/clean.txt"
+clean_dataset = "/kaggle/input/turtel-txt/clean_train.txt"
 clean_dataset_limit = false
 clean_dataset_offset = 0
-#noisy_dataset = "D:/synth_data/noisy.txt"
-noisy_dataset = "/kaggle/input/turtel-txt/noisy.txt"
+#noisy_dataset = "D:/synth_data/noisy.txt"n
+noisy_dataset = "/kaggle/input/turtel-txt/noisy_train.txt"
 noisy_dataset_limit = false
 noisy_dataset_offset = 0
 num_workers = 0
